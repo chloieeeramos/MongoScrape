@@ -55,3 +55,130 @@ function getJson() {
       
           });
       });
+
+      $(document).on("click", ".save-note", function() {
+        
+        var thisId = $(this).attr("data-id");
+      
+        $.ajax({
+            method: "POST",
+            url: "/articles/" + thisId,
+            data: {
+              
+              title: $("#title-input").val(),
+              body: $("#body-input").val()
+            }
+          })
+          
+          .done(function(data) {
+           
+        $("#notes").empty();
+          });
+          
+        $("#title-input").val("");
+        $("#body-input").val("");
+        $("#noteModal").modal("hide");
+        });
+        
+        $("#closeModal").on("click", function(event) {
+            $("#noteModal").modal("hide");
+          });
+
+        $(document).on("click", ".save-article", function() {
+           
+            var thisId = $(this).attr("data-id");
+          
+           
+            $.ajax({
+                method: "POST",
+                url: "/saved/" + thisId,
+              })
+             
+              .done(function(data) { 
+              console.log("article saved: " + data);
+              
+              });
+          
+          });
+
+        $(document).on("click", ".delete-article", function() {
+           
+            var thisId = $(this).attr("data-id");
+          
+           
+            $.ajax({
+                method: "POST",
+                url: "/deleteSaved/" + thisId,
+              })
+              
+              .done(function(data) {
+           location.reload();
+              });
+          
+          });
+          
+        $(document).on("click", ".delete-note", function() {
+            
+            var thisId = $(this).attr("data-id");
+            var articleId = $(this).attr("articleId");
+          console.log("inside delete-note " + thisId + " " + articleId);
+            
+            $.ajax({
+                method: "DELETE",
+                url: "/notes/deleteNote/" + thisId + "/" + articleId,
+              })
+              .done(function(data) { 
+               $("#noteModal").modal("hide");
+              console.log("delete successful: " + data);
+              location.reload();
+              });
+          
+          });
+
+        $("#view-saved").on("click", function() {
+            $.getJSON("/saved", function(data) {
+               
+               $("#articles").hide();
+                $("#savedArticles").show();
+                $("#savedArticles").empty();
+              
+              for (var i = 0; i < data.length; i++) {
+                
+                 $("#savedArticles").append("<div class='panel panel-primary'> <div class='panel-heading'><h3 data-id='" + data[i]._id + "'>" + data[i].title + "<br />" +  "</h3></div>" + "<div class='panel-body'><p>" + data[i].summary + "</p>" + "<br>" +
+                "<h5>" + "<a href='" + data[i].link + "'>" + "Article link" + '</a>' + "</h5>" +
+                  "<button class='view-notes' type='button' data-target='#noteModal' data-toggle='modal' data-id='" + data[i]._id + "'>" + "View Notes" + "</button>" +
+                  "<button class='delete-article' type='submit' data-id='" + data[i]._id + "'>" + "Delete Article" + "</button></div></div>"  + "<br>" + "<br>" + "<br>"
+                );
+              }
+            });
+           });
+          
+        $("#view-all").on("click", function() {
+           
+              $("#savedArticles").hide();
+              $("#articles").show();
+             
+              getJson();
+          })
+          
+
+        $(document).on("click", "#run-scrape", function() {
+           
+            $("#articles").empty();
+            
+             $.ajax({
+                method: "DELETE",
+                url: "/articles/deleteAll" 
+              }).done(function() {
+                $.ajax({
+                  method: "GET",
+                  url: "/scrape"
+                }).done(function(data) {
+                 console.log(data);
+                  
+                location.reload();
+                });
+              
+              });
+          
+          });
